@@ -39,4 +39,5 @@ Sigmoid outputs values between 0 and 1, indicating the probability of the image 
 
 **VIDEO OF IMPLEMENTATION**
 https://drive.google.com/file/d/1_mkaLr1XcusAAwj0lg8nMgC2F6VrVw_n/view?usp=drivesdk
-
+PPT
+https://docs.google.com/presentation/d/1FFyDn4zPQpWBaAI0TII-jWgIlFwcsRXu/edit?usp=sharing&ouid=100837408989732526935&rtpof=true&sd=true
