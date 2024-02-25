@@ -1,0 +1,125 @@
+import os
+import librosa
+import numpy as np
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, LSTM
+
+# Function to extract features from audio files
+def extract_features(file_path, mfcc=True, chroma=True, mel=True):
+    audio, sample_rate = librosa.load(file_path, res_type='kaiser_fast')
+    features = []
+    if mfcc:
+        mfccs = np.mean(librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40).T, axis=0)
+        features.append(mfccs)
+    if chroma:
+        chroma = np.mean(librosa.feature.chroma_stft(y=audio, sr=sample_rate).T, axis=0)
+        features.append(chroma)
+    if mel:
+        mel = np.mean(librosa.feature.melspectrogram(y=audio, sr=sample_rate).T, axis=0)
+        features.append(mel)
+    return np.concatenate(features)
+
+# Load dataset
+def load_dataset(dataset_path):
+    features = []
+    labels = []
+    for folder in os.listdir(dataset_path):
+        folder_path = os.path.join(dataset_path, folder)
+        if os.path.isdir(folder_path):
+            for file in os.listdir(folder_path):
+                file_path = os.path.join(folder_path, file)
+                try:
+                    feature = extract_features(file_path)
+                    features.append(feature)
+                    labels.append(folder)  # Assuming folder names represent class labels
+                except Exception as e:
+                    print(f"Error encountered while parsing file: {file_path}, {e}")
+    return np.array(features), np.array(labels)
+
+# Load dataset from Google Drive
+dataset_path = '/content/dataset'
+X, y = load_dataset(dataset_path)
+
+# Load dataset
+def load_dataset(dataset_path):
+    features = []
+    labels = []
+    for folder in os.listdir(dataset_path):
+        folder_path = os.path.join(dataset_path, folder)
+        if folder == 'DEMONSTRATION':
+            subfolder_path = os.path.join(folder_path, 'DEMONSTRATION')
+            for file in os.listdir(subfolder_path):
+                file_path = os.path.join(subfolder_path, file)
+                try:
+                    feature = extract_features(file_path)
+                    features.append(feature)
+                    labels.append('DEMONSTRATION')  # Assuming folder names represent class labels
+                except Exception as e:
+                    print(f"Error encountered while parsing file: {file_path}, {e}")
+        elif folder == 'KAGGLE':
+            subfolder_path = os.path.join(folder_path, 'AUDIO')
+            for file in os.listdir(subfolder_path):
+                file_path = os.path.join(subfolder_path, file)
+                try:
+                    feature = extract_features(file_path)
+                    features.append(feature)
+                    labels.append('KAGGLE')  # Assuming folder names represent class labels
+                except Exception as e:
+                    print(f"Error encountered while parsing file: {file_path}, {e}")
+    return np.array(features), np.array(labels)
+
+# Load dataset from Google Drive
+dataset_path = '/content/dataset'
+X, y = load_dataset(dataset_path)
+
+
+# Load dataset from Google Drive
+dataset_path = '/content/dataset'
+X, y = load_dataset(dataset_path)
+
+from sklearn.model_selection import train_test_split
+
+# Split dataset into training and temporary sets
+print("Dataset size:", len(X))
+
+features, labels = load_dataset(dataset_path)
+print("Features shape:", features.shape)
+print("Labels shape:", labels.shape)
+
+X_train_temp, X_temp, y_train_temp, y_temp = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+# Split the temporary set into validation and test sets
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42, stratify=y_temp)
+
+# Verify the class distribution in the splits
+print("Training set class distribution:")
+print(np.unique(y_train_temp, return_counts=True))
+print("Validation set class distribution:")
+print(np.unique(y_val, return_counts=True))
+print("Test set class distribution:")
+print(np.unique(y_test, return_counts=True))
+
+# Now, you can use X_train_temp, y_train_temp for training, X_val, y_val for validation, and X_test, y_test for testing.
+
+
+# Build the model
+model = Sequential([
+    LSTM(128, input_shape=(X_train.shape[1],)),
+    Dropout(0.2),
+    Dense(64, activation='relu'),
+    Dropout(0.2),
+    Dense(1, activation='sigmoid')
+])
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Train the model
+history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_val, y_val))
+
+# Evaluate the model
+test_loss, test_accuracy = model.evaluate(X_test, y_test)
+print(f'Test accuracy: {test_accuracy}')
+
+# Save the model
+model.save('/content/drive/My Drive/audio_deepfake_detection_model.h5')
